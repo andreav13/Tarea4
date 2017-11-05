@@ -72,7 +72,7 @@ double LatticeBoltzmann::Jy(int ix, int iy){
 }
 
 double LatticeBoltzmann::Ccelda(int ix, int iy){
-  int ix0=iy*tan(20*M_PI/180)+100-Ly*tan(20*M_PI/180)/2;
+  int ix0=iy*tan(60*M_PI/180)+100-Ly*tan(60*M_PI/180)/2;
   double s = 0.5+0.5*tanh(ix-ix0);
   return s*C/2+(1-s)*C;
 }
