@@ -1,0 +1,5 @@
+theta_i     theta_r_exp    theta_r_teo
+  20           9.11           9.85
+  30                          14.5
+  45			      20.7
+  60			      25.7
