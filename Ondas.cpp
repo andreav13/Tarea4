@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const int Lx=200;
+const int Lx=400;
 const int Ly=200;
 const int Q=5;
 const double W0=1/3.;
@@ -91,7 +91,7 @@ int ix,iy,i;
 
 double LatticeBoltzmann::GetSigma(int ix, int iy, int t){
   double A=10, lambda=10, omega=2*M_PI*C/lambda;
-  if(ix==Lx/2 and iy==Ly/2)
+  if(ix==0)
     return -A/omega*cos(omega*t);
   else
     return 0;
@@ -121,7 +121,7 @@ void LatticeBoltzmann::Adveccione(void){ //de fnew a f
 void LatticeBoltzmann::Imprimase(char const * NombreArchivo, int t){
   double rho0,Jx0,Jy0;
   ofstream MiArchivo(NombreArchivo);
-  for(int ix=0;ix<Lx;ix++){
+  for(int ix=0;ix<Lx/2;ix++){
     for(int iy=0;iy<Ly;iy++){
       double sigma = GetSigma(ix,iy,t);
       rho0=rho(ix,iy,true,sigma); Jx0=Jx(ix,iy);  Jy0=Jy(ix,iy);
@@ -151,7 +151,7 @@ void LatticeBoltzmann::ImprimaUnaLinea(char const * NombreArchivo,int t){
 int main(void){
 
   LatticeBoltzmann Ondas;
-  int t,tmax=160;
+  int t,tmax=400;
 
   double rho0=0,Jx0=0,Jy0=0;
   
@@ -159,12 +159,13 @@ int main(void){
   Ondas.Inicie(rho0,Jx0,Jy0);
 
   //Corra
-  for(t=0;t<tmax;t++){
+  for(t=0;t<=tmax;t++){
     Ondas.Colisione(t);
     Ondas.Adveccione();
   }
   
   Ondas.Imprimase("Ondas.dat", t);
+  
   
   return 0;
 }
