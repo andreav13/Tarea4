@@ -9,9 +9,6 @@ const int Lx=400;
 const int Ly=200;
 const int Q=5;
 const double W0=1/3.;
-const double C=0.5;   //velocidad de propagacion c²<1/(3(1-w0)) -> c<1/sqrt(2)
-const double tresC2=3*C*C;
-const double AUX0=1-tresC2*(1-W0);
 const double tau=0.5;
 const double Utau=1./tau;
 const double UmUtau=1-Utau;
@@ -27,7 +24,8 @@ public:
   double rho(int ix, int iy, bool UseNew, double sigma);
   double Jx(int ix, int iy);
   double Jy(int ix, int iy);
-  double fequilibrio(int i, double rho0, double Jx0, double Jy0);
+  double Ccelda(int ix, int iy);
+  double feq(int i, int ix, int iy, double rho0, double Jx0, double Jy0);
   void Inicie(double rho0, double Jx0, double Jy0);
   double GetSigma(int ix, int iy, int t);
   void Colisione(int t);
@@ -72,11 +70,15 @@ double LatticeBoltzmann::Jy(int ix, int iy){
   return suma;
 }
 
-double LatticeBoltzmann::fequilibrio(int i, double rho0, double Jx0, double Jy0){
+double LatticeBoltzmann::Ccelda(int ix, int iy){
+  return 0.5;
+}
+
+double LatticeBoltzmann::feq(int i, int ix, int iy, double rho0, double Jx0, double Jy0){
   if(i==0)
-    return AUX0*rho0;
+    return 1-3*Ccelda(ix,iy)*Ccelda(ix,iy)*(1-W0)*rho0;
   else
-    return w[i]*(tresC2*rho0+3*(V[0][i]*Jx0+V[1][i]*Jy0));
+    return w[i]*(3*Ccelda(ix,iy)*Ccelda(ix,iy)*rho0+3*(V[0][i]*Jx0+V[1][i]*Jy0));
   
 }
 
@@ -85,12 +87,12 @@ int ix,iy,i;
   for(ix=0;ix<Lx;ix++)
     for(iy=0;iy<Ly;iy++)
       for(i=0;i<Q;i++){
-	f[ix][iy][i]=fequilibrio(i,rho0,Jx0,Jy0);
+	f[ix][iy][i]=feq(i,ix,iy,rho0,Jx0,Jy0);
       }
 }
 
 double LatticeBoltzmann::GetSigma(int ix, int iy, int t){
-  double A=10, lambda=10, omega=2*M_PI*C/lambda;
+  double A=10, lambda=10, omega=2*M_PI*Ccelda(ix,iy)/lambda;
   if(ix==0)
     return -A/omega*cos(omega*t);
   else
@@ -99,14 +101,14 @@ double LatticeBoltzmann::GetSigma(int ix, int iy, int t){
 
 void LatticeBoltzmann::Colisione(int t){ //de f a fnew
   int ix,iy,i; double rho0,Jx0,Jy0,sigma;
-  double A=10, lambda=10, omega=2*M_PI*C/lambda;
+  double A=10, lambda=10, omega=2*M_PI*Ccelda(ix,iy)/lambda;
   for(ix=0;ix<Lx;ix++)
     for(iy=0;iy<Ly;iy++){ //para cada celda
       sigma=GetSigma(ix,iy,t);
       rho0=rho(ix,iy,false,sigma); Jx0=Jx(ix,iy); Jy0=Jy(ix,iy); //calculo campos
       //ImponerCampos(ix,iy,rho0,Jx0,Jy0,t);
       for(i=0;i<Q;i++) //para cada direccion
-	fnew[ix][iy][i]=UmUtau*f[ix][iy][i]+Utau*fequilibrio(i,rho0,Jx0,Jy0); //evoluciono
+	fnew[ix][iy][i]=UmUtau*f[ix][iy][i]+Utau*feq(i,ix,iy,rho0,Jx0,Jy0); //evoluciono
     }
 }
    
