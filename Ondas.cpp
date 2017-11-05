@@ -8,6 +8,7 @@ using namespace std;
 const int Lx=400;
 const int Ly=200;
 const int Q=5;
+const double C=0.5;
 const double W0=1/3.;
 const double tau=0.5;
 const double Utau=1./tau;
@@ -71,7 +72,9 @@ double LatticeBoltzmann::Jy(int ix, int iy){
 }
 
 double LatticeBoltzmann::Ccelda(int ix, int iy){
-  return 0.5;
+  int ix0=100;
+  double s = 0.5+0.5*tanh(ix-ix0);
+  return s*C/2+(1-s)*C;
 }
 
 double LatticeBoltzmann::feq(int i, int ix, int iy, double rho0, double Jx0, double Jy0){
@@ -153,7 +156,7 @@ void LatticeBoltzmann::ImprimaUnaLinea(char const * NombreArchivo,int t){
 int main(void){
 
   LatticeBoltzmann Ondas;
-  int t,tmax=400;
+  int t,tmax=800;
 
   double rho0=0,Jx0=0,Jy0=0;
   
@@ -167,7 +170,7 @@ int main(void){
   }
   
   Ondas.Imprimase("Ondas.dat", t);
-  
+
   
   return 0;
 }
