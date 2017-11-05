@@ -76,7 +76,7 @@ double LatticeBoltzmann::Ccelda(int ix, int iy){
 
 double LatticeBoltzmann::feq(int i, int ix, int iy, double rho0, double Jx0, double Jy0){
   if(i==0)
-    return 1-3*Ccelda(ix,iy)*Ccelda(ix,iy)*(1-W0)*rho0;
+    return (1-3*Ccelda(ix,iy)*Ccelda(ix,iy)*(1-W0))*rho0;
   else
     return w[i]*(3*Ccelda(ix,iy)*Ccelda(ix,iy)*rho0+3*(V[0][i]*Jx0+V[1][i]*Jy0));
   
