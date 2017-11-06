@@ -5,9 +5,10 @@
 
 using namespace std;
 
-const int Lx=600;
+const int Lx=400; //con 600 sale segmentation fault
 const int Ly=200;
 const int Q=5;
+const double C=0.5;
 const double W0=1/3.;
 const double tau=0.5;
 const double Utau=1./tau;
@@ -71,7 +72,7 @@ double LatticeBoltzmann::Jy(int ix, int iy){
 }
 
 double LatticeBoltzmann::Ccelda(int ix, int iy){
-  return 0.5;
+  return C;
 }
 
 double LatticeBoltzmann::feq(int i, int ix, int iy, double rho0, double Jx0, double Jy0){
@@ -100,56 +101,48 @@ double LatticeBoltzmann::GetSigma(int ix, int iy, int t){
 }
 
 void LatticeBoltzmann::Colisione(int t){ //de f a fnew
-  int ix,iy,i; double rho0,Jx0,Jy0,sigma;
-  double A=10, lambda=10, omega=2*M_PI*Ccelda(ix,iy)/lambda;
+  int ix,iy,i,i_intercambio=0; double rho0,Jx0,Jy0,sigma;
+  double A=10, lambda=10, omega=2*M_PI*C/lambda;
   for(ix=0;ix<Lx;ix++)
     for(iy=0;iy<Ly;iy++){ //para cada celda
 
-      if(ix>=100 and ix<=200 and (ix-50)*(ix-50)+(iy-100)*(iy-100)>100*100 )
-	//condicion de espejo
-      else{
+      if( ix>=100 and ix<=200 and (ix-50)*(ix-50)+(iy-100)*(iy-100)>100*100 )
+	for(i=0;i<Q;i++){
+	  if(i==1 or i==2) i_intercambio=i+2; if(i==3 or i==4) i_intercambio=i-2;
+	  fnew[ix][iy][i]=f[ix][iy][i_intercambio]; //condicion de espejo
+	}
+      
+	else{
 	sigma=GetSigma(ix,iy,t);
 	rho0=rho(ix,iy,false,sigma); Jx0=Jx(ix,iy); Jy0=Jy(ix,iy); //calculo campos
-	//ImponerCampos(ix,iy,rho0,Jx0,Jy0,t);
 	for(i=0;i<Q;i++) //para cada direccion
 	  fnew[ix][iy][i]=UmUtau*f[ix][iy][i]+Utau*feq(i,ix,iy,rho0,Jx0,Jy0); //evoluciono
-      }
+	}
     }
 }
    
 void LatticeBoltzmann::Adveccione(void){ //de fnew a f
-  int ix,iy,i;
+  int ix,iy,i,i_intercambio=0;
   for(ix=0;ix<Lx;ix++)
-    for(iy=0;iy<Ly;iy++)
+    for(iy=0;iy<Ly;iy++){
       for(i=0;i<Q;i++)
 	f[(ix+V[0][i]+Lx)%Lx][(iy+V[1][i]+Ly)%Ly][i]=fnew[ix][iy][i];
+    }
 }
 
 void LatticeBoltzmann::Imprimase(char const * NombreArchivo, int t){
   double rho0,Jx0,Jy0;
   ofstream MiArchivo(NombreArchivo);
-  for(int ix=0;ix<Lx;ix++){
+  for(int ix=0;ix<200;ix++){
     for(int iy=0;iy<Ly;iy++){
       double sigma = GetSigma(ix,iy,t);
       rho0=rho(ix,iy,true,sigma); Jx0=Jx(ix,iy);  Jy0=Jy(ix,iy);
-      //ImponerCampos(ix,iy,rho0,Jx0,Jy0,t);
       MiArchivo<<ix<<" "<<iy<<" "<<rho0<<endl;
     }MiArchivo<<endl;
   }
   MiArchivo.close();
 }
 
-void LatticeBoltzmann::ImprimaUnaLinea(char const * NombreArchivo,int t){
-  ofstream MiArchivo(NombreArchivo); double rho0,Jx0,Jy0;
-  int ix=Lx/2;
-  for(int iy=0;iy<Ly;iy++){
-    double sigma = GetSigma(ix,iy,t);
-    rho0=rho(ix,iy,true,sigma);   Jx0=Jx(ix,iy);  Jy0=Jy(ix,iy);
-    //ImponerCampos(ix,iy,rho0,Jx0,Jy0,t);
-    MiArchivo<<iy<<" "<<rho0<<endl;
-  }
-  MiArchivo.close();
-}
 
 
 //-----------------------Funciones Globales-----------------------
@@ -158,7 +151,7 @@ void LatticeBoltzmann::ImprimaUnaLinea(char const * NombreArchivo,int t){
 int main(void){
 
   LatticeBoltzmann Ondas;
-  int t,tmax=400;
+  int t,tmax=500;
 
   double rho0=0,Jx0=0,Jy0=0;
   

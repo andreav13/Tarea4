@@ -1,0 +1,2 @@
+dist_focal_medida = 43
+dist_focal_teorica = 50
